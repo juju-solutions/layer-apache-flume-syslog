@@ -1,0 +1,35 @@
+options:
+    resources_mirror:
+      type: string
+      default: ''
+      description: |
+        URL from which to fetch resources (e.g., Hadoop binaries) instead
+        of Launchpad.
+    channel_capacity:
+      type: string
+      default: '1000'
+      description: |
+        The maximum number of events stored in the channel.
+    channel_transaction_capacity:
+      type: string
+      default: '100'
+      description: |
+        The maximum number of events the channel will take from a source or
+        give to a sink per transaction.
+    event_dir:
+      type: string
+      default: 'flume-syslog'
+      description: |
+        The HDFS subdirectory under /user/flume where events will be stored.
+    source_port:
+      type: string
+      default: '514'
+      description: |
+        Port on which the agent source is listening. If relating to the
+        'rsyslog-forwarder-ha' charm, this must be '514'.
+    source_type:
+      type: string
+      default: 'syslogudp'
+      description: |
+        Agent source type. Can be 'syslogudp' or 'syslogtcp'. If
+        relating to the 'rsyslog-forwarder-ha' charm, this must be 'syslogudp'.

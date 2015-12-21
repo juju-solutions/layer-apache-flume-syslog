@@ -1,0 +1,28 @@
+# list sources, sinks, and channels in the agent
+a1.sources = r1
+a1.sinks = k1
+a1.channels = c1
+
+# source properties
+a1.sources.r1.type = {{ config['source_type'] }}
+a1.sources.r1.channels = c1
+a1.sources.r1.host = 0.0.0.0
+a1.sources.r1.keepFields = true
+a1.sources.r1.port = {{ config['source_port'] }}
+
+# inject our configured subdir
+a1.sources.r1.interceptors = i1
+a1.sources.r1.interceptors.i1.type = static
+a1.sources.r1.interceptors.i1.key = event_dir
+a1.sources.r1.interceptors.i1.value = {{ config['event_dir'] }}
+
+# channel properties
+a1.channels.c1.type = memory
+a1.channels.c1.capacity = {{ config['channel_capacity'] }}
+a1.channels.c1.transactionCapacity = {{ config['channel_transaction_capacity'] }}
+
+# sink properties
+a1.sinks.k1.type = {{ flume_hdfs['protocol'] }}
+a1.sinks.k1.channel = c1
+a1.sinks.k1.hostname = {{ flume_hdfs['private-address'] }}
+a1.sinks.k1.port = {{ flume_hdfs['port'] }}

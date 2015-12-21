@@ -1,0 +1,13 @@
+name: apache-flume-syslog
+summary: Ingest syslog events with Apache Flume
+maintainer: Kevin Monroe <kevin.monroe@canonical.com>
+description: |
+  Uses a Syslog source, memory channel, and Avro sink in Apache Flume
+  to ingest log data.
+tags: ["applications", "bigdata", "apache"]
+provides:
+  syslog:
+    interface: syslog
+requires:
+  flume-agent:
+    interface: flume-agent
