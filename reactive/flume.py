@@ -67,6 +67,7 @@ def configure_flume(flumehdfs):
     hookenv.status_set('maintenance', 'Setting up Flume')
     flume = Flume(dist_config())
     flume.configure_flume(flumehdfsinfo)
+    flume.restart()
     hookenv.status_set('active', 'Ready')
     set_state('flumesyslog.started')
 
