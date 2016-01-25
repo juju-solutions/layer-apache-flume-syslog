@@ -85,15 +85,14 @@ def agent_disconnected():
     hookenv.status_set('blocked', 'Waiting for a connection from a Flume agent')
 
     
-@when('syslog.available')
-@when_not('forwarding.ready')
-def syslog_forward_connected(syslog):
-    syslog.send_port(hookenv.config()['source_port'])
-    set_state('forwarding.ready')
-
-
-@when('forwarding.ready')
+@when('syslog.related')
 @when_not('syslog.available')
-def syslog_forward_disconnected():
-    remove_state('forwarding.ready')
+def syslog_forward_related(syslog):
+    hookenv.status_set('waiting', 'Waiting for the connection to syslog producer.')
+    syslog.send_port(hookenv.config()['source_port'])
+
+
+@when('syslog.available', 'flumesyslog.started')
+def syslog_forward_connected(syslog):
+    hookenv.status_set('active', 'Ready')
 
