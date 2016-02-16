@@ -21,17 +21,17 @@ and act as a client to a Hadoop namenode:
 
 You may manually deploy the recommended environment as follows:
 
-    juju deploy apache-hadoop-datanode datanode
     juju deploy apache-hadoop-namenode namenode
-    juju deploy apache-hadoop-nodemanager nodemgr
     juju deploy apache-hadoop-resourcemanager resourcemgr
+    juju deploy apache-hadoop-slave slave
     juju deploy apache-hadoop-plugin plugin
 
-    juju add-relation namenode datanode
-    juju add-relation resourcemgr nodemgr
+    juju add-relation namenode slave
+    juju add-relation resourcemgr slave
     juju add-relation resourcemgr namenode
     juju add-relation plugin resourcemgr
     juju add-relation plugin namenode
+
 
 Deploy Flume hdfs:
 
@@ -57,10 +57,10 @@ Deploy the `rsyslog-forwarder-ha` subordinate charm, relate it to
 `hdfs-master`, and then link the `syslog` interfaces:
 
     juju deploy rsyslog-forwarder-ha
-    juju add-relation rsyslog-forwarder-ha datanode
+    juju add-relation rsyslog-forwarder-ha namenode
     juju add-relation rsyslog-forwarder-ha flume-syslog
 
-Any syslog data generated on the `datanode` unit will now be ingested into
+Any syslog data generated on the `namenode` unit will now be ingested into
 HDFS via the `flume-syslog` and `flume-hdfs` charms. Flume may include multiple
 syslog events in each file written to HDFS. This is configurable with various
 options on the `flume-hdfs` charm. See descriptions of the `roll_*` options on
@@ -78,7 +78,7 @@ charm.
 To verify this charm is working as intended, trigger a syslog event on the
 monitored unit (`hdfs-master` in our deployment scenario):
 
-    juju ssh datanode/0 'echo flume-test'
+    juju ssh namenode/0 'echo flume-test'
 
 Now SSH to the `flume-hdfs` unit, locate an event, and cat it:
 
@@ -88,9 +88,9 @@ Now SSH to the `flume-hdfs` unit, locate an event, and cat it:
     hdfs dfs -cat /user/flume/<event_dir>/<yyyy-mm-dd>/FlumeData.<id>
 
 You should be able to find a timestamped message about SSH'ing into the
-`datanode` unit that corresponds to the trigger you issued above. Note that
+`namenode` unit that corresponds to the trigger you issued above. Note that
 this workload isn't limited to ssh-related events. You'll get every syslog
-event from the `datanode` unit. Happy logging!
+event from the `namenode` unit. Happy logging!
 
 
 ## Contact Information

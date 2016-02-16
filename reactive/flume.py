@@ -4,6 +4,7 @@ from charms.reactive import set_state, remove_state
 from charmhelpers.core import hookenv
 from charms.flume import Flume
 from jujubigdata.utils import DistConfig
+from charms.reactive.helpers import data_changed
 
 def dist_config():
 
@@ -48,7 +49,7 @@ def configure_flume(flumehdfs):
         flume = Flume(dist_config())
         flume.configure_flume(flumehdfsinfo)
         flume.restart()
-        hookenv.status_set('active', 'Ready')
+        hookenv.status_set('active', 'Ready (Accepting syslog connections)')
         set_state('flumesyslog.started')
     except:
         hookenv.log("Relation with Flume sink not established correctly")        
@@ -59,6 +60,15 @@ def configure_flume(flumehdfs):
 def agent_disconnected():
     remove_state('flumesyslog.started')
     hookenv.status_set('blocked', 'Waiting for a connection from a Flume agent')
+
+
+@when('flumesyslog.installed', 'flume-agent.available', 'flumesyslog.started')
+def reconfigure_flume(flumehdfs):
+    config = hookenv.config()
+    if not data_changed('configuration', config):
+        return
+    
+    configure_flume(flumehdfs)    
 
     
 @when('syslog.related')
