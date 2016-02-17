@@ -9,5 +9,5 @@ provides:
   syslog:
     interface: syslog
 requires:
-  flume-agent:
+  flumehdfs:
     interface: flume-agent
