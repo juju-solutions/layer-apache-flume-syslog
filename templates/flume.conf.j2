@@ -1,8 +1,8 @@
 # list sources, sinks, and channels in the agent
 a1.sources = syslog
-a1.channels = {{ ','.join(['chan-%s' % a['name'] for a in agents }}
-a1.sources.syslog.channels = {{ ','.join(['chan-%s' % a['name'] for a in agents }}
-a1.sinks = {{ ','.join(['sink-%s' % a['name'] for a in agents }}
+a1.channels = {{ agents|agent_list(prefix='chan-') }}
+a1.sources.syslog.channels = {{ agents|agent_list(prefix='chan-') }}
+a1.sinks = {{ agents|agent_list(prefix='sink-') }}
 
 # source properties
 a1.sources.syslog.type = {{ config['source_type'] }}
@@ -19,8 +19,8 @@ a1.sources.syslog.interceptors.i1.value = {{ config['event_dir'] }}
 {% for agent in agents %}
 # channel properties
 a1.channels.chan-{{ agent['name'] }}.type = memory
-a1.channels.chan-{{ agent['name'] }}.capacity = {{ config['channel_capacity']}}
-a1.channels.chan-{{ agent['name'] }}.transactionCapacity = {{ config['channel_transaction_capacity']}}
+a1.channels.chan-{{ agent['name'] }}.capacity = {{ config['channel_capacity'] }}
+a1.channels.chan-{{ agent['name'] }}.transactionCapacity = {{ config['channel_transaction_capacity'] }}
 
 # sink properties
 a1.sinks.sink-{{ agent['name'] }}.type = {{ agent['protocol'] }}
