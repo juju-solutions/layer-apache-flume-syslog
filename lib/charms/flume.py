@@ -43,11 +43,6 @@ class Flume(object):
         self.setup_flume_config()
         unitdata.kv().set('flume_syslog.installed', True)
 
-    def configure_flume(self, flume_hdfs_info_dict):
-        '''
-        handle configuration of Flume and setup the environment
-        '''
-        self.configure_flume_env(flume_hdfs_info_dict)        
 
     def setup_flume_config(self):
         '''
@@ -77,7 +72,7 @@ class Flume(object):
         
 
 
-    def configure_flume_env(self, flume_hdfs_info_dict):
+    def configure_flume(self, flume_hdfs_info_dict):
         config = hookenv.config()            
         templating.render(
             source='flume.conf.j2',
