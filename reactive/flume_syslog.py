@@ -32,6 +32,7 @@ def configure_flume(sink, syslog):  # pylint: disable=unused-argument
         # must run as root to listen on low-number UDP port
         # the port is currently hard-coded in the rsyslog-forwarder-ha charm
         flume.restart(user='root')
+    hookenv.open_port(hookenv.config('source_port'))
     hookenv.status_set('active', 'Ready')
     set_state('flume-syslog.started')
 
@@ -40,6 +41,7 @@ def configure_flume(sink, syslog):  # pylint: disable=unused-argument
 @when_not('flume-sink.ready')
 def stop_flume():
     flume = Flume()
+    hookenv.close_port(hookenv.config('source_port'))
     flume.stop()
     remove_state('flume-syslog.started')
 
