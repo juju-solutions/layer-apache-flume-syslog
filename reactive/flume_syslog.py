@@ -14,11 +14,14 @@ def report_status():
     sink_joined = is_state('flume-sink.joined')
     sink_ready = is_state('flume-sink.ready')
     if not syslog_joined and not sink_joined:
-        hookenv.status_set('blocked', 'Waiting for connection to Flume Sink and Syslog Forwarder')
+        hookenv.status_set('blocked', 'Waiting for connection to '
+                                      'Flume Sink and Syslog Forwarder')
     elif not syslog_joined:
-        hookenv.status_set('blocked', 'Waiting for connection to Syslog Forwarder')
+        hookenv.status_set('blocked', 'Waiting for connection to '
+                                      'Syslog Forwarder')
     elif not sink_joined:
-        hookenv.status_set('blocked', 'Waiting for connection to Flume Sink')
+        hookenv.status_set('blocked', 'Waiting for connection to '
+                                      'Flume Sink')
     elif sink_joined and not sink_ready:
         hookenv.status_set('blocked', 'Waiting for Flume Sink')
 
