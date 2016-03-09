@@ -14,17 +14,20 @@ def report_status():
     sink_joined = is_state('flume-sink.joined')
     sink_ready = is_state('flume-sink.ready')
     if not syslog_joined and not sink_joined:
-        hookenv.status_set('blocked', 'Waiting for connection to Flume Sink and Syslog Forwarder')
+        hookenv.status_set('blocked', 'Waiting for connection to '
+                                      'Flume Sink and Syslog Forwarder')
     elif not syslog_joined:
-        hookenv.status_set('active', 'Ready. Accepting connection from Syslog Forwarder')
+        hookenv.status_set('blocked', 'Waiting for connection to '
+                                      'Syslog Forwarder')
     elif not sink_joined:
-        hookenv.status_set('blocked', 'Waiting for connection to Flume Sink')
+        hookenv.status_set('blocked', 'Waiting for connection to '
+                                      'Flume Sink')
     elif sink_joined and not sink_ready:
         hookenv.status_set('blocked', 'Waiting for Flume Sink')
 
 
-@when('flume-base.installed', 'flume-sink.ready')
-def configure_flume(sink):
+@when('flume-base.installed', 'flume-sink.ready', 'syslog.joined')
+def configure_flume(sink, syslog):  # pylint: disable=unused-argument
     hookenv.status_set('maintenance', 'Configuring Flume')
     flume = Flume()
     flume.configure_flume({'agents': sink.agents()})
