@@ -1,3 +1,4 @@
+from charms.reactive import RelationBase
 from charms.reactive import when, when_not
 from charms.reactive import set_state, remove_state, is_state
 from charms.reactive.helpers import any_file_changed
@@ -30,21 +31,8 @@ def start_flume(sink):
     set_state('flume-syslog.started')
 
 
-@when('flume-syslog.started', 'flume-sink.ready', 'syslog.joined')
-def configure_flume_with_syslog_connections(sink, syslog):
-    reconfigure_flume(sink)
-    hookenv.status_set('active', 'Ready (Syslog souces: {})'
-                       .format(syslog.nodes()))
-
-
 @when('flume-syslog.started', 'flume-sink.ready')
-@when_not('syslog.joined')
 def configure_flume(sink):
-    reconfigure_flume(sink)
-    hookenv.status_set('active', 'Ready')
-
-
-def reconfigure_flume(sink):
     flume = Flume()
     flume.configure_flume({'agents': sink.agents()})
     if any_file_changed([flume.config_file]):
@@ -52,6 +40,13 @@ def reconfigure_flume(sink):
         # must run as root to listen on low-number UDP port
         hookenv.status_set('maintenance', 'Configuring Flume')
         flume.restart(user='root')
+
+    syslog = RelationBase.from_state('syslog.joined')
+    if syslog is None:
+        hookenv.status_set('active', 'Ready')
+    else:
+        hookenv.status_set('active', 'Ready (Syslog souces: {})'
+                                     .format(syslog.client_count()))
 
 
 @when('flume-syslog.started')
