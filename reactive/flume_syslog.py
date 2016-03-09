@@ -8,36 +8,50 @@ from charms.layer.apache_flume_base import Flume
 
 
 @when('flume-base.installed')
-@when_not('flume-syslog.started')
-def report_status():
-    syslog_joined = is_state('syslog.joined')
+@when_not('flume-syslog.started', 'flume-sink.ready')
+def wait_for_sink():
     sink_joined = is_state('flume-sink.joined')
     sink_ready = is_state('flume-sink.ready')
-    if not syslog_joined and not sink_joined:
-        hookenv.status_set('blocked', 'Waiting for connection to '
-                                      'Flume Sink and Syslog Forwarder')
-    elif not syslog_joined:
-        hookenv.status_set('blocked', 'Waiting for connection to '
-                                      'Syslog Forwarder')
-    elif not sink_joined:
-        hookenv.status_set('blocked', 'Waiting for connection to '
-                                      'Flume Sink')
+    if not sink_joined:
+        hookenv.status_set('blocked', 'Waiting for connection to Flume Sink')
     elif sink_joined and not sink_ready:
         hookenv.status_set('blocked', 'Waiting for Flume Sink')
 
 
-@when('flume-base.installed', 'flume-sink.ready', 'syslog.joined')
-def configure_flume(sink, syslog):  # pylint: disable=unused-argument
+@when('flume-base.installed', 'flume-sink.ready')
+@when_not('flume-syslog.started')
+def start_flume(sink):
     hookenv.status_set('maintenance', 'Configuring Flume')
     flume = Flume()
     flume.configure_flume({'agents': sink.agents()})
-    if any_file_changed([flume.config_file]):
-        # must run as root to listen on low-number UDP port
-        # the port is currently hard-coded in the rsyslog-forwarder-ha charm
-        flume.restart(user='root')
+    flume.restart(user='root')
     hookenv.open_port(hookenv.config('source_port'))
     hookenv.status_set('active', 'Ready')
     set_state('flume-syslog.started')
+
+
+@when('flume-syslog.started', 'flume-sink.ready', 'syslog.joined')
+def configure_flume_with_syslog_connections(sink, syslog):
+    reconfigure_flume(sink)
+    hookenv.status_set('active', 'Ready (Syslog souces: {})'
+                       .format(syslog.nodes()))
+
+
+@when('flume-syslog.started', 'flume-sink.ready')
+@when_not('syslog.joined')
+def configure_flume(sink):
+    reconfigure_flume(sink)
+    hookenv.status_set('active', 'Ready')
+
+
+def reconfigure_flume(sink):
+    flume = Flume()
+    flume.configure_flume({'agents': sink.agents()})
+    if any_file_changed([flume.config_file]):
+        # the port is currently hard-coded in the rsyslog-forwarder-ha charm
+        # must run as root to listen on low-number UDP port
+        hookenv.status_set('maintenance', 'Configuring Flume')
+        flume.restart(user='root')
 
 
 @when('flume-syslog.started')
@@ -47,9 +61,3 @@ def stop_flume():
     hookenv.close_port(hookenv.config('source_port'))
     flume.stop()
     remove_state('flume-syslog.started')
-
-
-@when('flume-syslog.started')
-@when_not('syslog.joined')
-def lost_syslog():
-    stop_flume()
