@@ -20,18 +20,6 @@ def wait_for_sink():
 
 
 @when('flume-base.installed', 'flume-sink.ready')
-@when_not('flume-syslog.started')
-def start_flume(sink):
-    hookenv.status_set('maintenance', 'Configuring Flume')
-    flume = Flume()
-    flume.configure_flume({'agents': sink.agents()})
-    flume.restart(user='root')
-    hookenv.open_port(hookenv.config('source_port'))
-    hookenv.status_set('active', 'Ready')
-    set_state('flume-syslog.started')
-
-
-@when('flume-syslog.started', 'flume-sink.ready')
 def configure_flume(sink):
     flume = Flume()
     flume.configure_flume({'agents': sink.agents()})
@@ -39,7 +27,9 @@ def configure_flume(sink):
         # the port is currently hard-coded in the rsyslog-forwarder-ha charm
         # must run as root to listen on low-number UDP port
         hookenv.status_set('maintenance', 'Configuring Flume')
+        hookenv.open_port(hookenv.config('source_port'))
         flume.restart(user='root')
+        set_state('flume-syslog.started')
 
     syslog = RelationBase.from_state('syslog.joined')
     if syslog is None:
