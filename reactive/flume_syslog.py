@@ -35,8 +35,8 @@ def configure_flume(sink):
     if syslog is None:
         hookenv.status_set('active', 'Ready')
     else:
-        hookenv.status_set('active', 'Ready (Syslog souces: {})'
-                                     .format(syslog.client_count()))
+        count = syslog.client_count()
+        hookenv.status_set('active', 'Ready (Syslog sources: %s)' % count)
 
 
 @when('flume-syslog.started')
