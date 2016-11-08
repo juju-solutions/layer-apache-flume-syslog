@@ -1,4 +1,4 @@
-## Overview
+# Overview
 
 Flume is a distributed, reliable, and available service for efficiently
 collecting, aggregating, and moving large amounts of log data. It has a simple
@@ -14,33 +14,31 @@ replacement for `rsyslog`, sending syslog events to HDFS instead of writing
 them to a local filesystem.
 
 
-## Deployment
+# Deploying
 
-This charm is uses the Hadoob base layer and the HDFS interface to pull its dependencies
-and act as a client to a Hadoop namenode:
+A working Juju installation is assumed to be present. If Juju is not yet set
+up, please follow the [getting-started][] instructions prior to deploying this
+charm.
 
-You may manually deploy the recommended environment as follows:
+This charm is intended to be deployed via one of the [apache bigtop bundles][].
+For example:
 
-    juju deploy apache-hadoop-namenode namenode
-    juju deploy apache-hadoop-resourcemanager resourcemgr
-    juju deploy apache-hadoop-slave slave
-    juju deploy apache-hadoop-plugin plugin
+    juju deploy hadoop-processing
 
-    juju add-relation namenode slave
-    juju add-relation resourcemgr slave
-    juju add-relation resourcemgr namenode
-    juju add-relation plugin resourcemgr
-    juju add-relation plugin namenode
+> **Note**: The above assumes Juju 2.0 or greater. If using an earlier version
+of Juju, use [juju-quickstart][] with the following syntax: `juju quickstart
+hadoop-processing`.
 
+This will deploy an Apache Bigtop Hadoop cluster. More information about this
+deployment can be found in the [bundle readme](https://jujucharms.com/hadoop-processing/).
 
-Deploy Flume hdfs:
+Now add Flume-HDFS and relate it to the cluster via the hadoop-plugin:
 
     juju deploy apache-flume-hdfs flume-hdfs
     juju add-relation flume-hdfs plugin
 
-Now that the base environment has been deployed (either via quickstart or
-manually), you are ready to add the `apache-flume-syslog` charm and
-relate it to the `flume-hdfs` agent:
+Now that the base environment has been deployed, add the `apache-flume-syslog`
+charm and relate it to the `flume-hdfs` agent:
 
     juju deploy apache-flume-syslog flume-syslog
     juju add-relation flume-syslog flume-hdfs
@@ -49,12 +47,22 @@ You are now ready to ingest remote syslog events! Note the deployment at this
 stage isn't very useful. You'll need to relate this charm to any other service
 that is configured to send data via the `syslog` interface.
 
+## Network-Restricted Environments
+Charms can be deployed in environments with limited network access. To deploy
+in this environment, configure a Juju model with appropriate proxy and/or
+mirror options. See [Configuring Models][] for more information.
 
-## Usage
+[getting-started]: https://jujucharms.com/docs/stable/getting-started
+[apache bigtop bundles]: https://jujucharms.com/u/bigdata-charmers/#bundles
+[juju-quickstart]: https://launchpad.net/juju-quickstart
+[Configuring Models]: https://jujucharms.com/docs/stable/models-config
 
-As an example use case, let's ingest our `hdfs-master` syslog events into HDFS.
+
+# Testing
+
+As an example use case, let's ingest our `namenode` syslog events into HDFS.
 Deploy the `rsyslog-forwarder-ha` subordinate charm, relate it to
-`hdfs-master`, and then link the `syslog` interfaces:
+`namenode`, and then link the `syslog` interfaces:
 
     juju deploy rsyslog-forwarder-ha
     juju add-relation rsyslog-forwarder-ha namenode
@@ -73,10 +81,10 @@ subdirectory is configurable and set to `flume-syslog` by default for this
 charm.
 
 
-## Test the deployment
+# Verifying
 
 To verify this charm is working as intended, trigger a syslog event on the
-monitored unit (`hdfs-master` in our deployment scenario):
+monitored unit (`namenode` in our deployment scenario):
 
     juju ssh namenode/0 'echo flume-test'
 
@@ -93,14 +101,15 @@ this workload isn't limited to ssh-related events. You'll get every syslog
 event from the `namenode` unit. Happy logging!
 
 
-## Contact Information
+# Contact Information
 
 - <bigdata@lists.ubuntu.com>
 
 
-## Help
+# Help
 
 - [Apache Flume home page](http://flume.apache.org/)
 - [Apache Flume bug tracker](https://issues.apache.org/jira/browse/flume)
 - [Apache Flume mailing lists](https://flume.apache.org/mailinglists.html)
-- `#juju` on `irc.freenode.net`
+- [Juju mailing list](https://lists.ubuntu.com/mailman/listinfo/juju)
+- [Juju community](https://jujucharms.com/community)
