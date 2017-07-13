@@ -14,9 +14,9 @@ def wait_for_sink():
     sink_joined = is_state('flume-sink.joined')
     sink_ready = is_state('flume-sink.ready')
     if not sink_joined:
-        hookenv.status_set('blocked', 'Waiting for connection to Flume Sink')
+        hookenv.status_set('blocked', 'Waiting for relation to Flume Sink')
     elif sink_joined and not sink_ready:
-        hookenv.status_set('blocked', 'Waiting for Flume Sink')
+        hookenv.status_set('waiting', 'Waiting for Flume Sink')
 
 
 @when('flume-base.installed', 'flume-sink.ready')
